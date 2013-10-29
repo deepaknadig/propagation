@@ -9,10 +9,12 @@ def build(bld):
         'model/jakes-propagation-loss-model.cc',
         'model/jakes-process.cc',
         'model/cost231-propagation-loss-model.cc',
+        'model/cost231-wi-loss-model.cc',
         'model/okumura-hata-propagation-loss-model.cc',
         'model/itu-r-1411-los-propagation-loss-model.cc',
         'model/itu-r-1411-nlos-over-rooftop-propagation-loss-model.cc',
         'model/kun-2600-mhz-propagation-loss-model.cc',
+        'model/ecc33-loss-model.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('propagation')
@@ -33,11 +35,13 @@ def build(bld):
         'model/jakes-process.h',
         'model/propagation-cache.h',
         'model/cost231-propagation-loss-model.h',
+        'model/cost231-wi-loss-model.h',
         'model/propagation-environment.h',
         'model/okumura-hata-propagation-loss-model.h',
         'model/itu-r-1411-los-propagation-loss-model.h',
         'model/itu-r-1411-nlos-over-rooftop-propagation-loss-model.h',
         'model/kun-2600-mhz-propagation-loss-model.h',
+        'model/ecc33-loss-model.h',
         ]
 
     if (bld.env['ENABLE_EXAMPLES']):
