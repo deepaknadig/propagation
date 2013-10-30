@@ -81,13 +81,13 @@ ECC33PathLossModel::GetTypeId (void)
                    MakeDoubleAccessor (&ECC33PathLossModel::m_frequency),
                    MakeDoubleChecker<double> ())
 
-     .AddAttribute ("TxAntennaHeight",
+    .AddAttribute ("TxAntennaHeight",
 				  "Height of the Transmitter Antenna (default is 50m).",
 				  DoubleValue (50),
 				  MakeDoubleAccessor (&ECC33PathLossModel::m_txheight),
 				  MakeDoubleChecker<double> ())
 
-	  .AddAttribute ("RxAntennaHeight",
+	.AddAttribute ("RxAntennaHeight",
 				  "Height of the Reciever Antenna (default is 2m).",
 				   DoubleValue (2),
 				   MakeDoubleAccessor (&ECC33PathLossModel::m_rxheight),
@@ -186,17 +186,6 @@ NS_LOG_DEBUG ("Abm =" << Abm );
 
 NS_LOG_DEBUG ("Gb =" << Gb );
  
-/*
- * Afs - Free Space Attenuation in dB
- * Abm - Basic Median path loss in dB
- * Gb - Transmitter Antenna height gain factor
- * Gr - Receiver Antenna height gain factor
- * Hb - Tx Antenna Height =  50m;
- * Hr - Rx Antenna Height =  2m ;
- * d - distance between Tx and Rx in meters = 5000m;
- * f - Frequeny in MHz = 2000 MHz;
- */
-
 double Gr;
 Environment m_environment = Suburban;
 //	For medium cities,
@@ -231,8 +220,3 @@ ECC33PathLossModel::DoAssignStreams (int64_t stream)
 }
 
 }
-
-
-
-
-

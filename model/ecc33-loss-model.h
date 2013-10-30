@@ -55,12 +55,12 @@ public:
   void SetEnvironment (Environment env);
   Environment GetEnvironment (void) const;
 
-  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
-
   void SetMinDistance (double minDistance);
   double GetMinDistance (void) const;
 
 private:
+  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
+
   virtual double DoCalcRxPower (double txPowerDbm, Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
   virtual int64_t DoAssignStreams (int64_t stream);
 
