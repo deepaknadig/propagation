@@ -54,9 +54,6 @@ public:
   void SetFrequency (double frequency);
   double GetFrequency (void) const;
 
-  void SetWavelength (double wavelength);
-  double GetWavelength (void) const;
-
   void SetTxAntennaHeight (double Hb);
   double GetTxAntennaHeight (void);
 

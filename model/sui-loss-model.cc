@@ -1,42 +1,54 @@
-//SUI propagation path loss model Logic
-//=========================================
-//The SUI model covers three terrain categories. 
-//Category A represents the maximum path-loss category which is a hilly terrain, 
-//Category B represents an intermediate path-loss category, and 
-//Category C represents the minimum path-loss category with mostly flat terrains.  
-//
-//The empical formulas for this model are as below: //
-//
-//The median path-loss for the SUI model can be generally written as
-//
-//                  (1)  PLsui = A + 10*u*log10(d/d0) ;
-//
-//for d>do, where do=100m. The term A in the above equation is given by 
-//
-//		    (2)  A = 20 * log10 ( 4*22*d0/lambda) ;
-//
-//where lambda is the wavelength in m. The path-loss exponent is given by
-//
-//                  (3) u = a - (b*ht) + (c/ht) ;
-//
-//in which the parameters a,b and c depend on the terrain category and are defined below.
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2013, SOLUTT Corporation
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Deepak Nadig Anantha <deepak@solutt.com>
+ *         Kushal S P           <kushalsp007@gmail.com>
+ */
 
-//Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
-//Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
-//Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
-//
-//Corrective action taken for other frequency and reciever antenna heights:
-//
-// PLsui = PLsui + PLdeltaf + PLdeltah ;
-//
-// where PLdeltaf = 6 * log10 (frequency/2000);
-//
-// for CategoryA and CategoryB, PLdeltah = -10.8 * log10 (Hr/2.0);
-//
-// for CategoryC, PLdeltah = -20 * log10 (Hr/2.0);
-//
-//==========================================================================================
-
+/*
+ * SUI propagation path loss model Logic
+ * =====================================
+ * The SUI model covers three terrain categories.
+ * Category A represents the maximum path-loss category which is a hill terrain,
+ * Category B represents an intermediate path-loss category, and
+ * Category C represents the minimum path-loss category with mostly flat terrains.
+ *
+ * The empirical formulas for this model are as below:
+ * The median path-loss for the SUI model can be generally written as
+ *                   (1)  PLsui = A + 10*u*log10(d/d0) ;
+ *
+ * for d>do, where do=100m. The term A in the above equation is given by
+ * 		    (2)  A = 20 * log10 ( 4*22*d0/lambda) ;
+ *
+ * where lambda is the wavelength in m. The path-loss exponent is given by
+ *                   (3) u = a - (b*ht) + (c/ht) ;
+ * in which the parameters a,b and c depend on the terrain category and are defined below.
+ *
+ * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
+ * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
+ * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
+ *
+ * Corrective action taken for other frequency and receiver antenna heights:
+ * PLsui = PLsui + PLdeltaf + PLdeltah ;
+ *
+ * where PLdeltaf = 6 * log10 (frequency/2000);
+ * for CategoryA and CategoryB, PLdeltah = -10.8 * log10 (Hr/2.0);
+ * for CategoryC, PLdeltah = -20 * log10 (Hr/2.0);
+ */
 
 #include "ns3/propagation-loss-model.h"
 #include "ns3/log.h"
@@ -44,7 +56,7 @@
 #include "ns3/double.h"
 #include "ns3/pointer.h"
 #include <cmath>
-#include "SUI-path-loss-model.h"
+#include "sui-loss-model.h"
 
 namespace ns3 {
 
@@ -66,19 +78,12 @@ SUIPathLossModel::GetTypeId (void)
                     MakeDoubleAccessor (&SUIPathLossModel::SetMinDistance, &SUIPathLossModel::GetMinDistance),
                     MakeDoubleChecker<double> ())
 
-    	.AddAttribute ("Frequency",
+   	.AddAttribute ("Frequency",
                    "The Frequency  (The frequency range is defined as 2000 MHz).",
                    DoubleValue (2000),
                    MakeDoubleAccessor (&SUIPathLossModel::m_frequency),
                    MakeDoubleChecker<double> ())
 
-
-  	.AddAttribute ("Wavelength",
-                   "The Wavelength  (The Wavelength range is defined in m ).",
-                   DoubleValue (0.15),
-                   MakeDoubleAccessor (&SUIPathLossModel::m_wavelength),
-                   MakeDoubleChecker<double> ())
-  
 	.AddAttribute ("TxAntennaHeight",
 				  "Height of the Transmitter Antenna (default is 50m).",
 				  DoubleValue (50),
@@ -101,7 +106,7 @@ SUIPathLossModel::SUIPathLossModel ()
 void
 SUIPathLossModel::SetMinDistance (double minDistance)
 {
-  m_minDistance = minDistance/1000;  // /1000Distance in KM.
+  m_minDistance = minDistance/1000;  //Distance in KM.
 }
 
 double
@@ -121,19 +126,6 @@ SUIPathLossModel::GetFrequency (void) const
 {
   return m_frequency;
 }
-
-void
-SUIPathLossModel::SetWavelength (double wavelength)
-{
-  m_wavelength = wavelength; // Wavelength is in m.
-}
-
-double
-SUIPathLossModel::GetWavelength (void) const
-{
-  return m_wavelength;
-}
-
 
 void
 SUIPathLossModel::SetTxAntennaHeight (double Hb)
