@@ -35,20 +35,25 @@
  * for d>do, where do=100m. The term A (Intercept) in the above equation is given by
  * 		    (2)  A = 20 * log10 ( 4*pi*d0/lambda) 
  * 
- * where lambda is the wavelength in m. 
+ * where lambda is the wavelength in meters. 
  * 
  * The path-loss exponent (gamma) is given by
  *                   (3) gamma = (a - (b*ht) + (c/ht)) + x * sigma_gamma ;  10m => ht => 80m
  * where, sigma_gamma is the std deviation of gamma.and x is a zero-mean gaussian variable N[0,1]
  * 
- * --------------------------------------------------------------------------------------------------
- * 
  * The parameters a,b and c depend on the terrain category and are defined below.
  *
- * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 
- * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
- * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
+ * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 0.57; mu_sigma = 10.6; sigma_sigma = 2.3;
+ * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1; sigma_gamma = 0.75; mu_sigma = 9.6;  sigma_sigma = 3.0;
+ * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0; sigma_gamma = 0.59; mu_sigma = 8.2;  sigma_sigma = 1.6;
  *
+ * And "s" is the shadow fading component, given by:
+ * 						(4) s =  y*sigma
+ * where y is a zero-mean Gaussian variable of unit standard deviation; and sigma, the standard deviation of s;
+ * 
+ * Thus,
+ * 					sigma = mu_sigma + z*sigma_sigma;
+ * 
  * Corrective action taken for other frequency and receiver antenna heights:
  * PLsui = PLsui + PLdeltaf + PLdeltah ;
  *
