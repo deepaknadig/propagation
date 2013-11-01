@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2007,2008, 2009 INRIA, UDcast
+ * Copyright (c) 2013, SOLUTT Corporation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,8 +15,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Mohamed Amine Ismail <amine.ismail@sophia.inria.fr>
- *                              <amine.ismail@udcast.com>
+ * Author: Deepak Nadig Anantha <deepak@solutt.com>
+ *         Kushal S P           <kushalsp007@gmail.com>
  */
 
 #ifndef SUI_LOSS_MODEL_H
@@ -26,14 +26,6 @@
 #include "ns3/propagation-loss-model.h"
 
 namespace ns3 {
-
-/**
- *  Frequency: 2000 MHz
- *  Tx Antenna Height: 50m
- *  Rx Antenna Height: 2m
- *  Tx-Rx Distance: 1 km
- *
- */
 
 class SUIPathLossModel : public PropagationLossModel
 {

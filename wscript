@@ -15,6 +15,7 @@ def build(bld):
         'model/itu-r-1411-nlos-over-rooftop-propagation-loss-model.cc',
         'model/kun-2600-mhz-propagation-loss-model.cc',
         'model/ecc33-loss-model.cc',
+        'model/sui-loss-model.cc',
         ]
 
     module_test = bld.create_ns3_module_test_library('propagation')
@@ -42,6 +43,7 @@ def build(bld):
         'model/itu-r-1411-nlos-over-rooftop-propagation-loss-model.h',
         'model/kun-2600-mhz-propagation-loss-model.h',
         'model/ecc33-loss-model.h',
+        'model/sui-loss-model.h',
         ]
 
     if (bld.env['ENABLE_EXAMPLES']):

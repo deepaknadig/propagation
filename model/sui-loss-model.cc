@@ -29,16 +29,23 @@
  *
  * The empirical formulas for this model are as below:
  * The median path-loss for the SUI model can be generally written as
- *                   (1)  PLsui = A + 10*u*log10(d/d0) ;
+ *                   (1)  PLsui = A + 10*gamma*log10(d/d0) + s ;
  *
- * for d>do, where do=100m. The term A in the above equation is given by
- * 		    (2)  A = 20 * log10 ( 4*22*d0/lambda) ;
+ * 
+ * for d>do, where do=100m. The term A (Intercept) in the above equation is given by
+ * 		    (2)  A = 20 * log10 ( 4*pi*d0/lambda) 
+ * 
+ * where lambda is the wavelength in m. 
+ * 
+ * The path-loss exponent (gamma) is given by
+ *                   (3) gamma = (a - (b*ht) + (c/ht)) + x * sigma_gamma ;  10m => ht => 80m
+ * where, sigma_gamma is the std deviation of gamma.and x is a zero-mean gaussian variable N[0,1]
+ * 
+ * --------------------------------------------------------------------------------------------------
+ * 
+ * The parameters a,b and c depend on the terrain category and are defined below.
  *
- * where lambda is the wavelength in m. The path-loss exponent is given by
- *                   (3) u = a - (b*ht) + (c/ht) ;
- * in which the parameters a,b and c depend on the terrain category and are defined below.
- *
- * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
+ * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 
  * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
  * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
  *
@@ -57,6 +64,7 @@
 #include "ns3/pointer.h"
 #include <cmath>
 #include "sui-loss-model.h"
+#define _USE_MATH_DEFINES
 
 namespace ns3 {
 
@@ -175,14 +183,15 @@ SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
     }
   
 	
-//parameters a,b and c depend on the terrain category and are defined below.
-//Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
-//Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
-//Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
-
+/*
+ * parameters a,b and c depend on the terrain category and are defined below.
+ * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
+ * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
+ * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
+ */
 	double d0 = 100; // d0 is defined as 100m ie 0.1 in KM.
 
-	double A = 20 * log10 ( 4*22*d0/(7*m_wavelength)) ;
+	double A = 20 * log10 ( 4*M_PI*d0/(m_wavelength)) ;
 
 	NS_LOG_DEBUG ("A  =" << A );
 
