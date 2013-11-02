@@ -51,6 +51,7 @@
 #include "ns3/log.h"
 #include "ns3/mobility-model.h"
 #include "ns3/double.h"
+#include "ns3/enum.h"
 #include "ns3/pointer.h"
 #include <cmath>
 #include "ecc33-loss-model.h"
@@ -91,7 +92,14 @@ ECC33PathLossModel::GetTypeId (void)
 				  "Height of the Reciever Antenna (default is 2m).",
 				   DoubleValue (2),
 				   MakeDoubleAccessor (&ECC33PathLossModel::m_rxheight),
-				   MakeDoubleChecker<double> ());
+				   MakeDoubleChecker<double> ())
+				   
+	.AddAttribute ("Environment",
+				  "Type of Environment (default is Urban).",
+				  EnumValue (Urban),
+				  MakeEnumAccessor (&ECC33PathLossModel::m_environment),
+				  MakeEnumChecker (Urban, "Urban",
+                                   Suburban, "Suburban"));
 
   return tid;
 }
@@ -187,7 +195,6 @@ NS_LOG_DEBUG ("Abm =" << Abm );
 NS_LOG_DEBUG ("Gb =" << Gb );
  
 double Gr;
-Environment m_environment = Suburban;
 //	For medium cities,
 if (m_environment == Suburban) {
 	Gr = (42.57 + (13.7 * log10(m_frequency))) * (log10(m_rxheight) - 0.585 );

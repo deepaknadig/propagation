@@ -26,6 +26,8 @@
 #include "ns3/pointer.h"
 #include <cmath>
 #include "cost231-wi-loss-model.h"
+#include "ns3/enum.h"
+
 
 namespace ns3 {
 
@@ -77,11 +79,18 @@ Cost231WILossModel::GetTypeId (void)
 				  MakeDoubleAccessor (&Cost231WILossModel::m_hmobile),
 				  MakeDoubleChecker<double> ())
 
-	  .AddAttribute ("BaseHeight",
-						 "Height of the BS (default is 30m).",
-						 DoubleValue (30),
-						 MakeDoubleAccessor (&Cost231WILossModel::m_hbase),
-						 MakeDoubleChecker<double> ());
+	.AddAttribute ("BaseHeight",
+					 "Height of the BS (default is 30m).",
+					 DoubleValue (30),
+					 MakeDoubleAccessor (&Cost231WILossModel::m_hbase),
+					 MakeDoubleChecker<double> ())
+					 
+	.AddAttribute ("Environment",
+				 "Choice of Environment (default is Urban).",
+				 EnumValue (Urban),
+				 MakeEnumAccessor (&Cost231WILossModel::m_environment),
+				 MakeEnumChecker (Urban, "Urban",
+                                  Suburban, "Suburban"));
 
   return tid;
 }

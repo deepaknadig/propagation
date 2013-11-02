@@ -43,9 +43,9 @@
  * 
  * The parameters a,b and c depend on the terrain category and are defined below.
  *
- * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 0.57; mu_sigma = 10.6; sigma_sigma = 2.3;
- * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1; sigma_gamma = 0.75; mu_sigma = 9.6;  sigma_sigma = 3.0;
- * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0; sigma_gamma = 0.59; mu_sigma = 8.2;  sigma_sigma = 1.6;
+ * Terrain Type A (Hilly/Moderate-to-heavy tree density): 		a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 0.57; mu_sigma = 10.6; sigma_sigma = 2.3;
+ * Terrain Type B (Hilly/Flat Moderate-to-heavy tree density): 	a = 4.0; b = 0.0065; c = 17.1; sigma_gamma = 0.75; mu_sigma = 9.6;  sigma_sigma = 3.0;
+ * Terrain Type C (Flat/Light tree density): 					a = 3.6; b = 0.005;  c = 20.0; sigma_gamma = 0.59; mu_sigma = 8.2;  sigma_sigma = 1.6;
  *
  * And "s" is the shadow fading component, given by:
  * 						(4) s =  y*sigma
@@ -66,6 +66,7 @@
 #include "ns3/log.h"
 #include "ns3/mobility-model.h"
 #include "ns3/double.h"
+#include "ns3/enum.h"
 #include "ns3/pointer.h"
 #include <cmath>
 #include "sui-loss-model.h"
@@ -107,7 +108,15 @@ SUIPathLossModel::GetTypeId (void)
 				  "Height of the Reciever Antenna between 2m and 10m (default is 2m).",
 				   DoubleValue (2),
 				   MakeDoubleAccessor (&SUIPathLossModel::m_rxheight),
-				   MakeDoubleChecker<double> ());
+				   MakeDoubleChecker<double> ())
+				   
+	.AddAttribute ("Environment",
+				  "Type of Terrain Category (default is CategoryA).",
+				  EnumValue (CategoryA),
+				  MakeEnumAccessor (&SUIPathLossModel::m_environment),
+				  MakeEnumChecker (CategoryA, "CategoryA",
+                                   CategoryB, "CategoryB",
+                                   CategoryC, "CategoryC"));
 
   return tid;
 }
@@ -199,8 +208,6 @@ SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
 	double b;
 	double c;
 	
-	Environment m_environment = CategoryC;
-
 	if (m_environment == CategoryA ) 
 	{
 	a = 4.6; b = 0.0075; c = 12.6;
