@@ -55,22 +55,20 @@ public:
   void SetEnvironment (Environment env);
   Environment GetEnvironment (void) const;
 
-  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
-
   void SetMinDistance (double minDistance);
   double GetMinDistance (void) const;
 
 private:
   virtual double DoCalcRxPower (double txPowerDbm, Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
   virtual int64_t DoAssignStreams (int64_t stream);
+  
+  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
 
   double m_txheight; // in meter
   double m_rxheight; // in meter
   Environment m_environment;
   double m_minDistance; // in meter
-  double m_frequency; // frequency in GHz
-  double m_wavelength; // wavelength in lambda
-  
+  double m_frequency; // frequency in GHz  
 };
 
 }

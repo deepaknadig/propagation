@@ -58,8 +58,8 @@
  * PLsui = PLsui + PLdeltaf + PLdeltah ;
  *
  * where PLdeltaf = 6 * log10 (frequency/2000);
- * for CategoryA and CategoryB, PLdeltah = -10.8 * log10 (Hr/2.0);
- * for CategoryC, PLdeltah = -20 * log10 (Hr/2.0);
+ * for Category A and CategoryB, PLdeltah = -10.8 * log10 (Hr/2.0);
+ * for Category C, PLdeltah = -20 * log10 (Hr/2.0);
  */
 
 #include "ns3/propagation-loss-model.h"
@@ -86,8 +86,8 @@ SUIPathLossModel::GetTypeId (void)
     .AddConstructor<SUIPathLossModel> ()
 
     .AddAttribute ("MinDistance",
-    				"The distance under which the propagation model refuses to give results (m). Default = 20m",
-                    DoubleValue (200),
+    				"The distance under which the propagation model refuses to give results (m). Default = 100m",
+                    DoubleValue (100),
                     MakeDoubleAccessor (&SUIPathLossModel::SetMinDistance, &SUIPathLossModel::GetMinDistance),
                     MakeDoubleChecker<double> ())
 
@@ -98,14 +98,14 @@ SUIPathLossModel::GetTypeId (void)
                    MakeDoubleChecker<double> ())
 
 	.AddAttribute ("TxAntennaHeight",
-				  "Height of the Transmitter Antenna (default is 50m).",
-				  DoubleValue (50),
+				  "Height of the Transmitter Antenna (default is 45m).",
+				  DoubleValue (45),
 				  MakeDoubleAccessor (&SUIPathLossModel::m_txheight),
 				  MakeDoubleChecker<double> ())
 
 	.AddAttribute ("RxAntennaHeight",
-				  "Height of the Reciever Antenna (default is 2m).",
-				   DoubleValue (6),
+				  "Height of the Reciever Antenna between 2m and 10m (default is 2m).",
+				   DoubleValue (2),
 				   MakeDoubleAccessor (&SUIPathLossModel::m_rxheight),
 				   MakeDoubleChecker<double> ());
 
@@ -119,7 +119,7 @@ SUIPathLossModel::SUIPathLossModel ()
 void
 SUIPathLossModel::SetMinDistance (double minDistance)
 {
-  m_minDistance = minDistance/1000;  //Distance in KM.
+  m_minDistance = minDistance;  //Distance in meters.
 }
 
 double
@@ -181,28 +181,25 @@ SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
 {
 
   double distance = x->GetDistanceFrom (y);
-  double distance_km = distance; //  for distance in km
-  if (distance_km <= m_minDistance)
+  double distance_m = distance; //  for distance in m
+  if (distance_m < m_minDistance)
     {
       return 0.0;
     }
   
 	
-/*
- * parameters a,b and c depend on the terrain category and are defined below.
- * Terrain Type A: a = 4.6; b = 0.0075; c = 12.6;
- * Terrain Type B: a = 4.0; b = 0.0065; c = 17.1;
- * Terrain Type C: a = 3.6; b = 0.005;  c = 20.0;
- */
-	double d0 = 100; // d0 is defined as 100m ie 0.1 in KM.
-
+	double d0 = 100; // d0 is defined as 100m.
+	
+	double m_wavelength = 3e8 / (m_frequency * 1e6);
 	double A = 20 * log10 ( 4*M_PI*d0/(m_wavelength)) ;
 
-	NS_LOG_DEBUG ("A  =" << A );
+	NS_LOG_DEBUG ("A  =" << A  << ", Wavelength = " << m_wavelength << ", pi = " << M_PI);
 
 	double a;
 	double b;
 	double c;
+	
+	Environment m_environment = CategoryC;
 
 	if (m_environment == CategoryA ) 
 	{
@@ -217,50 +214,30 @@ SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
 	a = 3.6; b = 0.005;  c = 20.0;
   	}
 
-  
-		double u = a - (b*m_txheight) + (c/m_txheight) ;
+		double m_gamma = a - (b*m_txheight) + (c/m_txheight);
 
-		NS_LOG_DEBUG ("u =" << u << ",   a " << a << ",   b = " << b << ",   c = " << c );
+		NS_LOG_DEBUG ("m_gamma =" << m_gamma << ",   a " << a << ",   b = " << b << ",   c = " << c );
 
-// SUI Path Loss Model Equation		
+		double PLsui = A + (10*m_gamma*log10(distance_m/d0)) ;
 
-		double PLsui = A + (10*u*log10(distance_km/d0)) ;
+		NS_LOG_DEBUG (" PL of SUI Model =" << PLsui << ",   distance = " << distance_m << ",   H m = " << m_rxheight << ",   H b = " << m_txheight << ",   Frequency = " << m_frequency);
 
-		NS_LOG_DEBUG (" PL of SUI Model =" << PLsui << ",   distance = " << distance_km << ",   H m = " << m_rxheight << ",   H b = " << m_txheight << ",   Frequency = " << m_frequency);
- 
-
-//	Hb - Tx Antenna Height =  50m; 
-//	Hm - Rx Antenna Height =  6m ; 
-//	d0 = 100 m; 
-//	f - Frequeny in GHz = 2 GHz;
-
-
-double PLdeltah;
+	double PLdeltah;
 
 	double PLdeltaf = 6 * log10 (m_frequency/2000);
 	
 	if ( (m_environment == CategoryA) || (m_environment ==  CategoryB) )
-
 	{	
-
 		PLdeltah = -10.8 * (log10 (m_rxheight/2.0));
-
 	}
-
 	else	
-
 	{ 
-
 		PLdeltah = -20 * (log10 (m_rxheight/2.0));
-
 	}
 
 		NS_LOG_DEBUG ("PL deltah =" << PLdeltah );
-
 		NS_LOG_DEBUG ("PL deltaf =" << PLdeltaf );
 
-
-// SUI Path Loss model equation for corrective action
 
 	double loss_in_db = PLsui + PLdeltaf + PLdeltah ;
 
@@ -283,8 +260,3 @@ SUIPathLossModel::DoAssignStreams (int64_t stream)
 }
 
 }
-
-
-
-
-
