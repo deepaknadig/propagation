@@ -1,40 +1,60 @@
-//ECC-33 propagation path loss model Logic
-//=========================================
-//	 PLecc33 = Afs + Abm - Gb - Gr -----------------------------------------------------------------------eq 1
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
+/*
+ * Copyright (c) 2013, SOLUTT Corporation
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author: Deepak Nadig Anantha <deepak@solutt.com>
+ *         Kushal S P           <kushalsp007@gmail.com>
+ */
 
-//	Afs - Free Space Attenuation in dB
-//	Abm - Basic Median path loss in dB
-//	Gb - Transmitter Antenna height gain factor
-//	Gr - Receiver Antenna height gain factor 
-
-//	Afs = 92.4 + ( 20 * log10(d) ) + (20 * log10(f) ) --------------------------------------------- eq 2
-
-//	Abm = 20.41 + ( 9.83 * log10(d) ) + ( 7.894 * log10(f) ) + ( 9.56 * (( log10(f))*( log10(f))) -- eq 3
-
-//	Gb = log10(Hb/200)*(13.958 + (5.8*((log10(d))*(log10(d))) -------------------------------------- eq 4
-
-//	For medium cities,
-
-//	Gr = (42.57 + (13.7*log10(f))*((log10(Hr)) - 0.585 ) ------------------------------------------- eq 5
-
-//	For large cities,
-
-//	Gr = ( 0.759 * Hr ) - 1.892 -------------------------------------------------------------------- eq 6
-
-//	Hb - Tx Antenna Height =  m; 
-//	Hr - Rx Antenna Height; 
-//	d - distance between Tx and Rx in Km; 
-//	f - Frequeny in Ghz;
-
-//===============================================================================================================
+/*
+ * ECC-33 propagation path loss model Logic
+ * ========================================
+ * PLecc33 = Afs + Abm - Gb - Gr -----------------------------------------------------------------------eq 1
+ * 
+ * Afs - Free Space Attenuation in dB
+ * Abm - Basic Median path loss in dB
+ * Gb - Transmitter Antenna height gain factor
+ * Gr - Receiver Antenna height gain factor
+ * 
+ * Afs = 92.4 + ( 20 * log10(d) ) + (20 * log10(f) ) --------------------------------------------- eq 2
+ * Abm = 20.41 + ( 9.83 * log10(d) ) + ( 7.894 * log10(f) ) + ( 9.56 * 2 * log10(f)) -- eq 3
+ * Gb = log10(Hb/200)*(13.958 + (5.8*2*(log10(d))) -------------------------------------- eq 4
+ * 
+ * 
+ * For medium cities,
+ * Gr = (42.57 + (13.7*log10(f)))*((log10(Hr)) - 0.585 ) ------------------------------------------- eq 5
+ * 
+ * For large cities,
+ * Gr = ( 0.759 * Hr ) - 1.892 -------------------------------------------------------------------- eq 6
+ * 
+ * Hb - Tx Antenna Height in meters;
+ * Hr - Rx Antenna Height;
+ * d - distance between Tx and Rx in Km; 
+ * f - Frequeny in Ghz;
+ * 
+ */
 
 #include "ns3/propagation-loss-model.h"
 #include "ns3/log.h"
 #include "ns3/mobility-model.h"
 #include "ns3/double.h"
+#include "ns3/enum.h"
 #include "ns3/pointer.h"
 #include <cmath>
-#include "ECC33-path-loss-model.h"
+#include "ecc33-loss-model.h"
 
 namespace ns3 {
 
@@ -57,22 +77,29 @@ ECC33PathLossModel::GetTypeId (void)
                     MakeDoubleChecker<double> ())
 
     .AddAttribute ("Frequency",
-                   "The Frequency  (The frequency range is defined as 2 GHz).",
+                   "The Frequency of operation (Default: 2 GHz).",
                    DoubleValue (2),
                    MakeDoubleAccessor (&ECC33PathLossModel::m_frequency),
                    MakeDoubleChecker<double> ())
 
-     .AddAttribute ("TxAntennaHeight",
-				  "Height of the Transmitter Antenna (default is 30m).",
+    .AddAttribute ("TxAntennaHeight",
+				  "Height of the Transmitter Antenna (default is 50m).",
 				  DoubleValue (50),
 				  MakeDoubleAccessor (&ECC33PathLossModel::m_txheight),
 				  MakeDoubleChecker<double> ())
 
-	  .AddAttribute ("RxAntennaHeight",
-				  "Height of the Reciever Antenna (default is 6m).",
+	.AddAttribute ("RxAntennaHeight",
+				  "Height of the Reciever Antenna (default is 2m).",
 				   DoubleValue (2),
 				   MakeDoubleAccessor (&ECC33PathLossModel::m_rxheight),
-				   MakeDoubleChecker<double> ());
+				   MakeDoubleChecker<double> ())
+				   
+	.AddAttribute ("Environment",
+				  "Type of Environment (default is Urban).",
+				  EnumValue (Urban),
+				  MakeEnumAccessor (&ECC33PathLossModel::m_environment),
+				  MakeEnumChecker (Urban, "Urban",
+                                   Suburban, "Suburban"));
 
   return tid;
 }
@@ -156,49 +183,29 @@ ECC33PathLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const
   
 	double Afs = 92.4 + ( 20 * log10(distance_km) ) + ( 20 * log10(m_frequency) ) ;
 
-NS_LOG_DEBUG ("A fs =" << Afs );
+NS_LOG_DEBUG ("Afs =" << Afs );
 
-	double Abm = 20.41 + (9.83 * log10(distance_km)) + (7.894 * log10(m_frequency)) + (9.56 * ((log10(m_frequency))*(log10(m_frequency))));
+	double Abm = 20.41 + (9.83 * log10(distance_km)) + (7.894 * log10(m_frequency)) + (9.56 * 2 * (log10(m_frequency)));
 
-NS_LOG_DEBUG ("A bm =" << Abm );
+NS_LOG_DEBUG ("Abm =" << Abm );
 
-	double Gb = (log10(m_txheight/200)) * (13.958 + (5.8 * ( (log10(distance_km))*(log10(distance_km)) ) ) );
+	double Gb = (log10(m_txheight/200)) * (13.958 + (5.8 * 2 * (log10(distance_km))));
 
 
-NS_LOG_DEBUG ("G b =" << Gb );
+NS_LOG_DEBUG ("Gb =" << Gb );
  
-//	Afs - Free Space Attenuation in dB
-//	Abm - Basic Median path loss in dB
-//	Gb - Transmitter Antenna height gain factor
-//	Gr - Receiver Antenna height gain factor 
-//	Hb - Tx Antenna Height =  30m; 
-//	Hr - Rx Antenna Height =  6m ; 
-//	d - distance between Tx and Rx in meters = 5000m; 
-//	f - Frequeny in MHz = 2000 MHz;
-
 double Gr;
-
 //	For medium cities,
-
-if (m_environment == Suburban) {	
-
-Gr = (42.57 + (13.7*log10(m_frequency))) * ((log10(m_rxheight)) - 0.585 ); 
-
-NS_LOG_DEBUG ("G r =" << Gr );
-
+if (m_environment == Suburban) {
+	Gr = (42.57 + (13.7 * log10(m_frequency))) * (log10(m_rxheight) - 0.585 );
+	NS_LOG_DEBUG ("Gr =" << Gr );
 }
-
-//	For large cities,
-
-else	{ 
-
-Gr = ( 0.759 * m_rxheight ) - 1.892 ;
-
-NS_LOG_DEBUG ("G r =" << Gr );
+else { //	For large cities,
+	Gr = ( 0.759 * m_rxheight ) - 1.892 ;
+	NS_LOG_DEBUG ("Gr =" << Gr );
 }
 
 // ECC33 Path Loss model equation
-
 double loss_in_db = Afs + Abm - Gb - Gr;
 
   NS_LOG_DEBUG ("dist =" << distance << ", Path Loss = " << loss_in_db << ", G r = " << Gr << ", G b = " << Gb << ", freq = " << m_frequency << ", Tx antenna height = " << m_txheight << ", Rx antenna height = " << m_rxheight << ", A fs = " << Afs << ", A bm = " << Abm);
@@ -220,8 +227,3 @@ ECC33PathLossModel::DoAssignStreams (int64_t stream)
 }
 
 }
-
-
-
-
-

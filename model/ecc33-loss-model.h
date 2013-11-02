@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2007,2008, 2009 INRIA, UDcast
+ * Copyright (c) 2013, SOLUTT Corporation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,35 +15,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Mohamed Amine Ismail <amine.ismail@sophia.inria.fr>
- *                              <amine.ismail@udcast.com>
+ * Author: Deepak Nadig Anantha <deepak@solutt.com>
+ *         Kushal S P           <kushalsp007@gmail.com>
  */
 
-#ifndef SUI_LOSS_MODEL_H
-#define SUI_LOSS_MODEL_H
+#ifndef ECC33_LOSS_MODEL_H
+#define ECC33_LOSS_MODEL_H
 
 #include "ns3/nstime.h"
 #include "ns3/propagation-loss-model.h"
 
 namespace ns3 {
 
-/**
- *  Frequency: 2000 MHz
- *  Tx Antenna Height: 50m
- *  Rx Antenna Height: 2m
- *  Tx-Rx Distance: 1 km
- *
- */
-
-class SUIPathLossModel : public PropagationLossModel
+class ECC33PathLossModel : public PropagationLossModel
 {
 
 public:
   static TypeId GetTypeId (void);
-  SUIPathLossModel ();
+  ECC33PathLossModel ();
   enum Environment
   {
-    CategoryA, CategoryB, CategoryC
+    Suburban, Urban
   };
 
   /**
@@ -54,24 +46,21 @@ public:
   void SetFrequency (double frequency);
   double GetFrequency (void) const;
 
-  void SetWavelength (double wavelength);
-  double GetWavelength (void) const;
-
   void SetTxAntennaHeight (double Hb);
   double GetTxAntennaHeight (void);
 
-  void SetRxAntennaHeight (double Hm);
+  void SetRxAntennaHeight (double Hr);
   double GetRxAntennaHeight (void);
 
   void SetEnvironment (Environment env);
   Environment GetEnvironment (void) const;
 
-  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
-
   void SetMinDistance (double minDistance);
   double GetMinDistance (void) const;
 
 private:
+  double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
+
   virtual double DoCalcRxPower (double txPowerDbm, Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
   virtual int64_t DoAssignStreams (int64_t stream);
 
@@ -80,10 +69,9 @@ private:
   Environment m_environment;
   double m_minDistance; // in meter
   double m_frequency; // frequency in GHz
-  double m_wavelength; // wavelength in lambda
   
 };
 
 }
 
-#endif /* SUIPATHLOSSMODEL_H */
+#endif /* ECC33PATHLOSSMODEL_H */
