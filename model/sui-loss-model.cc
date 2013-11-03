@@ -209,6 +209,8 @@ SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
 	double mean = 0.0;
 	double variance = 1.0;
 	
+	// Use NS_GLOBAL_VALUE="RngRun=20" from terminal to change the seed for RNG from default 1 to 20. 
+	// Ex: $ NS_GLOBAL_VALUE="RngRun=20"  ./waf --run scratch/file-name
 	Ptr<NormalRandomVariable> randx = CreateObject<NormalRandomVariable> ();
 	Ptr<NormalRandomVariable> randy = CreateObject<NormalRandomVariable> ();
 	Ptr<NormalRandomVariable> randz = CreateObject<NormalRandomVariable> ();
