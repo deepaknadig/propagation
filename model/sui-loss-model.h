@@ -51,6 +51,9 @@ public:
 
   void SetRxAntennaHeight (double Hm);
   double GetRxAntennaHeight (void);
+  
+  void SetShadowing (double sh);
+  double GetShadowing (void);
 
   void SetEnvironment (Environment env);
   Environment GetEnvironment (void) const;
@@ -64,11 +67,12 @@ private:
   
   double GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const;
 
-  double m_txheight; // in meter
-  double m_rxheight; // in meter
+  double m_txheight; 			// in meter
+  double m_rxheight;			// in meter
   Environment m_environment;
-  double m_minDistance; // in meter
-  double m_frequency; // frequency in GHz  
+  double m_minDistance;			// in meter
+  double m_frequency;			// frequency in GHz  
+  double m_shadowing;			// Enable/Disable Shadowing
 };
 
 }

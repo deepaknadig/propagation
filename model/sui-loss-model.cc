@@ -55,7 +55,7 @@
  * 					sigma = mu_sigma + z*sigma_sigma;
  * 
  * Corrective action taken for other frequency and receiver antenna heights:
- * PLsui = PLsui + PLdeltaf + PLdeltah ;
+ * PLsui = PLsui + PLdeltaf + PLdeltah + s;
  *
  * where PLdeltaf = 6 * log10 (frequency/2000);
  * for Category A and CategoryB, PLdeltah = -10.8 * log10 (Hr/2.0);
@@ -70,6 +70,7 @@
 #include "ns3/pointer.h"
 #include <cmath>
 #include "sui-loss-model.h"
+#include "ns3/random-variable-stream.h"
 #define _USE_MATH_DEFINES
 
 namespace ns3 {
@@ -116,7 +117,13 @@ SUIPathLossModel::GetTypeId (void)
 				  MakeEnumAccessor (&SUIPathLossModel::m_environment),
 				  MakeEnumChecker (CategoryA, "CategoryA",
                                    CategoryB, "CategoryB",
-                                   CategoryC, "CategoryC"));
+                                   CategoryC, "CategoryC"))
+	
+	.AddAttribute ("EnableShadowing",
+				  "Enable/Disable Shadowing (s), use 1/0 to enable/disable (default is 1).",
+				   DoubleValue (1),
+				   MakeDoubleAccessor (&SUIPathLossModel::m_shadowing),
+				   MakeDoubleChecker<double> ());
 
   return tid;
 }
@@ -174,6 +181,18 @@ SUIPathLossModel::GetRxAntennaHeight (void)
 }
 
 void
+SUIPathLossModel::SetShadowing (double sh)
+{
+  m_shadowing = sh;
+}
+
+double
+SUIPathLossModel::GetShadowing (void)
+{
+  return m_shadowing;
+}
+
+void
 SUIPathLossModel::SetEnvironment (Environment env)
 {
   m_environment = env;
@@ -184,48 +203,76 @@ SUIPathLossModel::GetEnvironment (void) const
   return m_environment;
 }
 
-
 double
 SUIPathLossModel::GetLoss (Ptr<MobilityModel> x, Ptr<MobilityModel> y) const
 {
+	double mean = 0.0;
+	double variance = 1.0;
+	
+	Ptr<NormalRandomVariable> randx = CreateObject<NormalRandomVariable> ();
+	Ptr<NormalRandomVariable> randy = CreateObject<NormalRandomVariable> ();
+	Ptr<NormalRandomVariable> randz = CreateObject<NormalRandomVariable> ();
 
-  double distance = x->GetDistanceFrom (y);
-  double distance_m = distance; //  for distance in m
-  if (distance_m < m_minDistance)
+	randx->SetAttribute ("Mean", DoubleValue (mean));
+	randx->SetAttribute ("Variance", DoubleValue (variance));
+	
+	randy->SetAttribute ("Mean", DoubleValue (mean));
+	randy->SetAttribute ("Variance", DoubleValue (variance));
+	
+	randz->SetAttribute ("Mean", DoubleValue (mean));
+	randz->SetAttribute ("Variance", DoubleValue (variance));
+	
+	double m_x = randx->GetValue ();
+	double m_y = randy->GetValue ();
+	double m_z = randz->GetValue ();
+
+	double distance = x->GetDistanceFrom (y);
+	double distance_m = distance; //  for distance in m
+	if (distance_m < m_minDistance)
     {
       return 0.0;
     }
   
-	
 	double d0 = 100; // d0 is defined as 100m.
 	
 	double m_wavelength = 3e8 / (m_frequency * 1e6);
-	double A = 20 * log10 ( 4*M_PI*d0/(m_wavelength)) ;
+	double A = 20 * log10 ( 4*M_PI*d0/(m_wavelength));
 
 	NS_LOG_DEBUG ("A  =" << A  << ", Wavelength = " << m_wavelength << ", pi = " << M_PI);
 
 	double a;
 	double b;
 	double c;
+	double sigma_gamma;
+	double mu_sigma;
+	double sigma_sigma;
 	
 	if (m_environment == CategoryA ) 
 	{
-	a = 4.6; b = 0.0075; c = 12.6;
+	a = 4.6; b = 0.0075; c = 12.6; sigma_gamma = 0.57; mu_sigma = 10.6; sigma_sigma = 2.3;
   	} 
 	else if (m_environment == CategoryB ) 
 	{
-	a = 4.0; b = 0.0065; c = 17.1;
+	a = 4.0; b = 0.0065; c = 17.1; sigma_gamma = 0.75; mu_sigma = 9.6; sigma_sigma = 3.0;
 	} 
 	else 
 	{
-	a = 3.6; b = 0.005;  c = 20.0;
+	a = 3.6; b = 0.005;  c = 20.0; sigma_gamma = 0.59; mu_sigma = 8.2; sigma_sigma = 1.6;
   	}
 
-		double m_gamma = a - (b*m_txheight) + (c/m_txheight);
-
+		// Enable/Disable Shadowing
+		if (m_shadowing == 0)
+		{
+			m_x = 0;
+			m_y = 0;
+		}
+		
+		double m_gamma = a - (b*m_txheight) + (c/m_txheight) + (m_x * sigma_gamma);
+		double s = m_y * (mu_sigma + (m_z * sigma_sigma));
+		
 		NS_LOG_DEBUG ("m_gamma =" << m_gamma << ",   a " << a << ",   b = " << b << ",   c = " << c );
-
-		double PLsui = A + (10*m_gamma*log10(distance_m/d0)) ;
+		
+		double PLsui = A + (10*m_gamma*log10(distance_m/d0)) + s;
 
 		NS_LOG_DEBUG (" PL of SUI Model =" << PLsui << ",   distance = " << distance_m << ",   H m = " << m_rxheight << ",   H b = " << m_txheight << ",   Frequency = " << m_frequency);
 
